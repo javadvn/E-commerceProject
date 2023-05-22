@@ -2,11 +2,14 @@ import React from 'react'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { Route, Routes } from 'react-router-dom'
 import { routes } from './routes/routes'
+import { ReactQueryDevtools } from 'react-query/devtools'
+
 
 const queryClient = new QueryClient()
 
 function App() {
   return (<>
+
     <QueryClientProvider client={queryClient}>
       <Routes>
         {
@@ -15,7 +18,10 @@ function App() {
           })
         }
       </Routes>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
+
+    
 
   </>
   )

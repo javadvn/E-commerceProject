@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -13,54 +12,84 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
-// TODO remove, this demo shouldn't need to reset the theme.
-
-const defaultTheme = createTheme();
-
+const validationSchema = yup.object({
+  firstName: yup.string().max(20, 'Max 20 characters required').matches(/^[A-Za-z]+$/, 'Only letters allowed').required('Required'),
+  lastName: yup.string().max(20, 'Max 20 characters required').matches(/^[A-Za-z]+$/, 'Only letters allowed').required('Required'),
+  email: yup.string().email('Invalid email address').required('Required'),
+  password: yup
+    .string()
+    .min(8, 'Minimum 8 characters required')
+    .max(20, 'Maximum 20 characters required')
+    .matches(
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]+$/,
+      'Must include at least one letter, one numeric digit, and one special character'
+    )
+    .required('Required'),
+  agreeToTerms: yup.boolean().oneOf([true], 'You must accept the terms and conditions').required('Required'),
+});
 
 function RegisterForm() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
+  let navigate = useNavigate();
+
+  const formik = useFormik({
+    initialValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      password: '',
+      agreeToTerms: false,
+    },
+    validationSchema: validationSchema,
+    onSubmit: (values) => {
+      const isValid = validationSchema.isValidSync(values);
+
+      if (isValid) {
+        window.alert('Registered successfully!');
+      } else {
+        const [firstErrorField] = Object.keys(validationSchema.validateSync(values, { abortEarly: false }));
+
+        switch (firstErrorField) {
+          case 'firstName':
+            window.alert('First name must be max 20 characters long and only contain letters.');
+            break;
+          case 'lastName':
+            window.alert('Last name must be max 20 characters long and only contain letters.');
+            break;
+          case 'email':
+            window.alert('Invalid email address.');
+            break;
+          case 'password':
+            window.alert(
+              'Password must be 8-20 characters long and contain at least one letter, one numeric digit, and one special character.'
+            );
+            break;
+          case 'agreeToTerms':
+            window.alert('You must accept the terms and conditions.');
+            break;
+          default:
+            window.alert('Invalid input. Please check the entered information.');
+            break;
+        }
+      }
+    },
+  });
 
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={createTheme()}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
-        <Box
-          sx={{
-            marginTop: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
+        <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
-          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Box component="form" noValidate onSubmit={formik.handleSubmit} sx={{ mt: 3 }}>
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -71,6 +100,10 @@ function RegisterForm() {
                   id="firstName"
                   label="First Name"
                   autoFocus
+                  value={formik.values.firstName}
+                  onChange={formik.handleChange}
+                  error={formik.touched.firstName && Boolean(formik.errors.firstName)}
+                  helperText={formik.touched.firstName && formik.errors.firstName}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -81,6 +114,10 @@ function RegisterForm() {
                   label="Last Name"
                   name="lastName"
                   autoComplete="family-name"
+                  value={formik.values.lastName}
+                  onChange={formik.handleChange}
+                  error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+                  helperText={formik.touched.lastName && formik.errors.lastName}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -91,6 +128,10 @@ function RegisterForm() {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  error={formik.touched.email && Boolean(formik.errors.email)}
+                  helperText={formik.touched.email && formik.errors.email}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -102,36 +143,46 @@ function RegisterForm() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  error={formik.touched.password && Boolean(formik.errors.password)}
+                  helperText={formik.touched.password && formik.errors.password}
                 />
               </Grid>
               <Grid item xs={12}>
                 <FormControlLabel
-                  control={<Checkbox value="allowExtraEmails" color="primary" />}
+                  control={
+                    <Checkbox
+                      name="agreeToTerms"
+                      color="primary"
+                      checked={formik.values.agreeToTerms}
+                      onChange={formik.handleChange}
+                    />
+                  }
                   label="I want to receive inspiration, marketing promotions and updates via email."
                 />
+                {formik.touched.agreeToTerms && formik.errors.agreeToTerms && (
+                  <Typography variant="body2" color="error">
+                    {formik.errors.agreeToTerms}
+                  </Typography>
+                )}
               </Grid>
             </Grid>
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
+            <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
               Sign Up
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="#" variant="body2" onClick={() => navigate('/login')}>
                   Already have an account? Sign in
                 </Link>
               </Grid>
             </Grid>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 5 }} />
       </Container>
     </ThemeProvider>
   );
 }
 
-export default RegisterForm
+export default RegisterForm;
