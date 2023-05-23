@@ -1,16 +1,38 @@
-import React from 'react';
-import RegisterForm from '../components/PublicPages/RegisterForm';
-import LoginPage from '../components/PublicPages/LoginPage';
-import MyOrdersPage from '../components/PrivatePages/MyOrdersPage';
-import ProductsAdmin from '../components/PrivatePages/ProductsAdmin';
-import ProductsHomePage from '../components/PublicPages/ProductsHomePage';
-import { Route, Routes } from 'react-router-dom';
-import Auth from '../components/Auth';
+import React from "react";
+import { Route } from "react-router-dom";
+import RegisterForm from "../components/PublicPages/RegisterForm";
+import LoginPage from "../components/PublicPages/LoginPage";
+import ProductsAdmin from "../components/PrivatePages/ProductsAdmin";
+import ProductsHomePage from "../components/PublicPages/ProductsHomePage";
 
-export const routes = [
-  { path: '/', element: <ProductsHomePage /> },
-  { path: '/signup', element: <RegisterForm /> },
-  { path: '/login', element: <LoginPage /> },
-  { path: '/cart', element: <Auth><MyOrdersPage /></Auth> },
-  { path: '/adminproducts', element: <Auth><ProductsAdmin /></Auth> },
-];
+import BasketPage from "../components/PrivatePages/BasketPage";
+import ProtectedRoute from "../components/Auth/ProtectedRoute";
+
+export const PublicRoutes =[
+{
+path:"/",
+element:<ProductsHomePage />
+},
+{
+  path:"/signup",
+  element:<RegisterForm />
+  },
+  {
+    path:"/login",
+    element:<LoginPage />
+    },
+]
+
+
+
+export const PrivateRoutes = [
+  {
+    path:"/cart",
+    element:<ProtectedRoute><BasketPage /></ProtectedRoute>
+    },
+   {path:"/adminproducts",
+   element:<ProtectedRoute><ProductsAdmin /></ProtectedRoute>
+  } 
+]
+
+

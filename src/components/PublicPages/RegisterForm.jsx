@@ -15,6 +15,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { LocalStorageContext } from '../LocalStorageContext';
 
 const validationSchema = yup.object({
   firstName: yup.string().max(20, 'Max 20 characters required').matches(/^[A-Za-z]+$/, 'Only letters allowed').required('Required'),
@@ -33,6 +34,7 @@ const validationSchema = yup.object({
 });
 
 function RegisterForm() {
+  const { storeUserRegistrationData } = React.useContext(LocalStorageContext);
   let navigate = useNavigate();
 
   const formik = useFormik({
@@ -48,7 +50,8 @@ function RegisterForm() {
       const isValid = validationSchema.isValidSync(values);
 
       if (isValid) {
-        window.alert('Registered successfully!');
+        storeUserRegistrationData(values);
+        navigate('/login');
       } else {
         const [firstErrorField] = Object.keys(validationSchema.validateSync(values, { abortEarly: false }));
 
@@ -77,6 +80,7 @@ function RegisterForm() {
       }
     },
   });
+
 
   return (
     <ThemeProvider theme={createTheme()}>

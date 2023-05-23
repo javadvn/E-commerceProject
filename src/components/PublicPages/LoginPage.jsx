@@ -8,19 +8,35 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { useNavigate } from "react-router-dom";
+import { LocalStorageContext } from "../LocalStorageContext";
+import { useContext, useEffect } from "react";
 
 
 function LoginPage() {
 
-  let navigate = useNavigate();
+  const navigate = useNavigate();
+  const { isLoggedIn } = useContext(LocalStorageContext);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/');
+    }
+  }, [isLoggedIn, navigate]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const email = data.get('email');
+    const password = data.get('password');
+
+    const userRegistrationData = JSON.parse(localStorage.getItem('userRegistrationData'));
+    if (userRegistrationData && email === userRegistrationData.email && password === userRegistrationData.password) {
+      // Set login status in local storage
+      localStorage.setItem('isLoggedIn', true);
+      navigate('/');
+    } else {
+      window.alert('Invalid email or password.');
+    }
   };
 
   return (
